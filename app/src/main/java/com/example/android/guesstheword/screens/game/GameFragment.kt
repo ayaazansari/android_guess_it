@@ -23,6 +23,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.NavHostFragment.findNavController
 import com.example.android.guesstheword.R
@@ -34,9 +35,6 @@ import com.example.android.guesstheword.databinding.GameFragmentBinding
 class GameFragment : Fragment() {
 
     private lateinit var viewModel:GameViewModel
-
-
-
 
     private lateinit var binding: GameFragmentBinding
 
@@ -57,30 +55,28 @@ class GameFragment : Fragment() {
         binding.correctButton.setOnClickListener {
             viewModel.onCorrect()
             updateWordText()
-            updateScoreText()
         }
         binding.skipButton.setOnClickListener {
             viewModel.onSkip()
             updateWordText()
-            updateScoreText()
         }
-        updateScoreText()
+        viewModel.score.observe(this, Observer {newScore->
+            binding.scoreText.text = newScore.toString()
+           })
+
         updateWordText()
         return binding.root
 
     }
 
-//    private fun gameFinished() {
-//        val action = GameFragmentDirections.actionGameToScore()
-//        action.setScore(viewModel.score)
-//        findNavController(this).navigate(action)
-//    }
+    private fun gameFinished() {
+        val action = GameFragmentDirections.actionGameToScore()
+        action.setScore(viewModel.score.value?:0)
+        findNavController(this).navigate(action)
+    }
 
 
     private fun updateWordText() {
-        binding.wordText.text = viewModel.word
-    }
-    private fun updateScoreText() {
-        binding.scoreText.text = viewModel.score.toString()
+        binding.wordText.text = viewModel.word.value
     }
 }
